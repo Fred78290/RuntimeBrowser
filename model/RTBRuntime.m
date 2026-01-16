@@ -86,7 +86,11 @@ static RTBRuntime *sharedInstance;
 	//Lookup the ClassStub for klass or create one if none exists and add it to +allClassStuds.
     NSString *klassName = NSStringFromClass(klass);
 	
-    // First check if we've already got a ClassStub for klass. If yes, we'll return it.
+	if (klassName == nil) {
+		return nil;
+	}
+
+	// First check if we've already got a ClassStub for klass. If yes, we'll return it.
     RTBClass *cs = [self classStubForClassName:klassName];
 	if(cs) return cs;
 	
@@ -138,7 +142,10 @@ static RTBRuntime *sharedInstance;
 	Class parent = class_getSuperclass(klass);   // Get klass's superclass 
 	if (parent != nil) {               // and recursively create (or get) its stub.
 		RTBClass *parentCs = [self getOrCreateClassStubsRecursivelyForClass:parent];
-		[parentCs addSubclassStub:cs];  // we are a subclass of our parent.
+
+		if (parentCs != nil) {
+			[parentCs addSubclassStub:cs];  // we are a subclass of our parent.
+		}
 	} else  // If there is no superclass, then klass is a root class.
 		[[self rootClasses] addObject:cs];
 	
@@ -207,7 +214,9 @@ static RTBRuntime *sharedInstance;
 	}
 
 	for (i=0; i<numClasses; ++i)
-		[self getOrCreateClassStubsRecursivelyForClass:classes[i]];
+		if (classes[i] != nil) {
+			[self getOrCreateClassStubsRecursivelyForClass:classes[i]];
+		}
 
 	free(classes);
     
